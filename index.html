@@ -305,6 +305,25 @@
       text-underline-offset: 3px;
       cursor: pointer;
     }
+
+    footer {
+      margin-top: 80px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    footer a {
+      color: #64748b;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -321,7 +340,7 @@
     </div>
     <div class="meta-bar">
       <span id="charCount">0 文字</span>
-      <span>※完全無料・ローカルブラウザ判定（データは送信されません）</span>
+      <span>※完全無料・ローカルブラウザ判定（データは外部送信されません）</span>
     </div>
     <button class="btn-primary" id="analyzeBtn" onclick="runAnalysis()">文章の適性スコアを診断する</button>
 
@@ -357,10 +376,15 @@
           <li>AI検索のクエリに対応するFAQ形式の構成案</li>
           <li>競合と差をつける数値・ファクトの配置アドバイス</li>
         </ul>
-        <a href="https://buy.stripe.com/test_dummy" target="_blank" class="btn-secondary" id="buyLink">詳細レポートを申し込む（1,480円）</a>
-        <a href="https://docs.google.com/forms" target="_blank" class="upsell-link">サイト全体のリライト代行・AIOコンサル（3万円〜）のご相談はこちら</a>
+        <a href="https://forms.gle/d2pcyDzTtxpUFtwy5" target="_blank" class="btn-secondary" id="buyLink">詳細レポートを申し込む（フォームへ）</a>
+        <a href="https://forms.gle/d2pcyDzTtxpUFtwy5" target="_blank" class="upsell-link">対象ページの文章書き直し・代行のご相談はこちら</a>
       </div>
     </div>
+
+    <footer>
+      <p>運営：WEBCRAFT / haya-studio | <a href="https://x.com" target="_blank">開発者X (Twitter)</a> | <a href="https://forms.gle/d2pcyDzTtxpUFtwy5" target="_blank">お問い合わせ</a></p>
+      <p style="margin-top: 4px;">プライバシー保護：入力された文章データはブラウザ内でのみ解析され、外部サーバーやAI学習に送信・保存されることは一切ありません。</p>
+    </footer>
   </div>
 
   <script>
