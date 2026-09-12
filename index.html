@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GEO Content Checker | AI検索向けコンテンツ適性診断</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --card-bg: #f8fafc;
+      --tag-bg: #fee2e2;
+      --tag-text: #b91c1c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding: 64px 20px 120px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 36px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      margin-bottom: 16px;
+      background: #fafafa;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.35;
+      margin-bottom: 12px;
+      color: var(--text-main);
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Form */
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 16px;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text-main);
+      resize: vertical;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--text-main);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 1px var(--text-main);
+    }
+
+    textarea::placeholder {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .meta-bar {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      padding: 0 4px;
+    }
+
+    button.btn-primary {
+      width: 100%;
+      padding: 15px;
+      background-color: var(--text-main);
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+
+    button.btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    /* Result Section */
+    #result-area {
+      display: none;
+      margin-top: 48px;
+      border-top: 1px solid var(--border);
+      padding-top: 40px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .score-banner {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .score-val {
+      font-size: 44px;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .score-total {
+      font-size: 16px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .score-status {
+      display: inline-block;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+
+    .short-review {
+      font-size: 14px;
+      color: #475569;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.6;
+    }
+
+    .metrics {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .metric-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card-bg);
+      padding: 16px;
+    }
+
+    .metric-item h3 {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .metric-score {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .metric-desc {
+      font-size: 12.5px;
+      color: #334155;
+      white-space: pre-line;
+      line-height: 1.6;
+    }
+
+    .tag-detect {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      margin: 2px 4px 2px 0;
+    }
+
+    /* Paid Report / Upsell Box */
+    .lead-box {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 24px;
+      text-align: center;
+      background: #fafafa;
+    }
+
+    .lead-box .price-tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #0f172a;
+      background: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    .lead-box h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .lead-box p {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .lead-box ul {
+      list-style: none;
+      font-size: 12px;
+      color: #475569;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .lead-box ul li::before {
+      content: "✓ ";
+      color: #10b981;
+      font-weight: bold;
+    }
+
+    .btn-secondary {
+      display: inline-block;
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 20px;
+      background-color: var(--text-main);
+      color: #ffffff;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: opacity 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      opacity: 0.9;
+    }
+
+    .upsell-link {
+      display: block;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="badge">AIO / GEO Content Validator</div>
+      <h1>あなたのサイトは、AIが引用しやすい<br>「文章の型」になっていますか？</h1>
+      <p class="subtitle">PerplexityやChatGPT Searchが事実データとして抽出しやすい構造かを診断します。</p>
+    </header>
+
+    <div class="input-group">
+      <textarea id="inputText" placeholder="WebサイトやLPの文章を貼り付けてください（例：会社概要、強み、サービス特徴、FAQなど）..."></textarea>
+    </div>
+    <div class="meta-bar">
+      <span id="charCount">0 文字</span>
+      <span>※完全無料・ローカルブラウザ判定（データは送信されません）</span>
+    </div>
+    <button class="btn-primary" id="analyzeBtn" onclick="runAnalysis()">文章の適性スコアを診断する</button>
+
+    <div id="result-area">
+      <div class="score-banner">
+        <span class="score-val" id="totalScore">0</span>
+        <span class="score-total">/ 30点</span>
+        <span class="score-status" id="scoreBadge">判定中</span>
+      </div>
+      <p class="short-review" id="reviewText">診断中...</p>
+
+      <div class="metrics">
+        <div class="metric-item">
+          <h3>1. 1次情報の具体性 <span class="metric-score" id="score1">- / 10点</span></h3>
+          <div class="metric-desc" id="advice1"></div>
+        </div>
+        <div class="metric-item">
+          <h3>2. 構造化・FAQ適性 <span class="metric-score" id="score2">- / 10点</span></h3>
+          <div class="metric-desc" id="advice2"></div>
+        </div>
+        <div class="metric-item">
+          <h3>3. 客観性・事実記述（E-E-A-T） <span class="metric-score" id="score3">- / 10点</span></h3>
+          <div class="metric-desc" id="advice3"></div>
+        </div>
+      </div>
+
+      <div class="lead-box">
+        <span class="price-tag">買い切り 1,480円</span>
+        <h4>自社専用の『AI検索向けリライト改善レポート』</h4>
+        <p>診断結果をもとに、AI検索に好まれる具体的なリライト原稿、Q&A案、見出し改善案をまとめたPDFレポートを作成します。</p>
+        <ul>
+          <li>入力テキストの具体的な清書・リライト原稿</li>
+          <li>AI検索のクエリに対応するFAQ形式の構成案</li>
+          <li>競合と差をつける数値・ファクトの配置アドバイス</li>
+        </ul>
+        <a href="https://buy.stripe.com/test_dummy" target="_blank" class="btn-secondary" id="buyLink">詳細レポートを申し込む（1,480円）</a>
+        <a href="https://docs.google.com/forms" target="_blank" class="upsell-link">サイト全体のリライト代行・AIOコンサル（3万円〜）のご相談はこちら</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const textarea = document.getElementById('inputText');
+    textarea.addEventListener('input', () => {
+      document.getElementById('charCount').innerText = `${textarea.value.length} 文字`;
+    });
+
+    function runAnalysis() {
+      const text = textarea.value.trim();
+      if (!text) {
+        alert('Webサイトの文章を入力してください。');
+        return;
+      }
+
+      // 1. 1次情報の具体性（数値・曖昧語）
+      let score1 = 10;
+      let advice1Arr = [];
+      const vagueWords = ['業界トップクラス', '安心安全', '丁寧なサポート', '信頼と実績', '最高峰', '親身な', '圧倒的', '高品質', '充実した'];
+      const detectedVague = vagueWords.filter(word => text.includes(word));
+
+      if (detectedVague.length > 0) {
+        score1 -= Math.min(detectedVague.length * 2, 5);
+        const tags = detectedVague.map(w => `<span class="tag-detect">${w}</span>`).join(' ');
+        advice1Arr.push(`【検知された抽象表現】\n${tags}\nAIはこれらを「誇張広告」と判定し引用を避けます。具体的な数値や第三者実績に置き換えてください。`);
+      }
+
+      const numbers = text.match(/[0-9０-９]+([%％万億円人社時間倍日]+)?/g) || [];
+      if (numbers.length === 0) {
+        score1 -= 4;
+        advice1Arr.push(`【数値不足】文章中に具体的な数値（％、導入社数、対応時間など）がありません。AIが事実として扱えるデータを追記してください。`);
+      } else {
+        advice1Arr.push(`【良好】「${numbers.slice(0, 3).join(', ')}」などのデータが検出されました。`);
+      }
+      score1 = Math.max(1, score1);
+
+      // 2. 構造化・FAQ適性
+      let score2 = 10;
+      let advice2Arr = [];
+      const hasQuestion = /[？\?]|Q[.:：]/g.test(text);
+      const hasList = /[・\-■●★1-9][.、]/g.test(text);
+
+      if (!hasQuestion) {
+        score2 -= 3;
+        advice2Arr.push(`【Q&A形式の不足】「〜の費用は？」「納期は？」といった疑問文がありません。検索クエリに直接答える見出しを設けてください。`);
+      } else {
+        advice2Arr.push(`【良好】検索意図に応える疑問文・Q&A形式が確認できました。`);
+      }
+
+      if (!hasList) {
+        score2 -= 2;
+        advice2Arr.push(`【箇条書き推奨】要点が箇条書き化されていません。AIはリスト構造のテキストを要約データとして優先引用します。`);
+      }
+
+      const sentences = text.split(/[。\n]/).filter(s => s.trim().length > 0);
+      if (sentences.some(s => s.length > 100)) {
+        score2 -= 2;
+        advice2Arr.push(`【長文の検知】1文が100文字を超える文章があります。短文に区切ることでAIの解析精度が上がります。`);
+      }
+      score2 = Math.max(1, score2);
+
+      // 3. 客観性・事実記述（E-E-A-T）
+      let score3 = 10;
+      let advice3Arr = [];
+      const subjectiveWords = ['目指します', '思います', '自信があります', '感じていただけます', '大好評'];
+      const detectedSubjective = subjectiveWords.filter(word => text.includes(word));
+
+      if (detectedSubjective.length > 0) {
+        score3 -= Math.min(detectedSubjective.length * 2, 4);
+        const tags = detectedSubjective.map(w => `<span class="tag-detect">${w}</span>`).join(' ');
+        advice3Arr.push(`【主観表現を検知】\n${tags}\n感情的な表現を避け、「〜機能を提供する」「〜年に開始」など客観的事実の記述に統一してください。`);
+      }
+
+      const objectiveMatches = text.match(/(である|提供している|対応する|導入された|実施した)/g) || [];
+      if (objectiveMatches.length === 0) {
+        score3 -= 2;
+        advice3Arr.push(`【事実記述の推奨】「〜を提供している」「〜を採用」など、事実を示す断定文を増やしてください。`);
+      } else {
+        advice3Arr.push(`【良好】客観的な事実ベースの文末構造が確認できました。`);
+      }
+      score3 = Math.max(1, score3);
+
+      // 結果の反映
+      const total = score1 + score2 + score3;
+      document.getElementById('totalScore').innerText = total;
+      document.getElementById('score1').innerText = `${score1} / 10点`;
+      document.getElementById('score2').innerText = `${score2} / 10点`;
+      document.getElementById('score3').innerText = `${score3} / 10点`;
+
+      document.getElementById('advice1').innerHTML = advice1Arr.join('\n\n') || '特段の減点項目はありませんでした。';
+      document.getElementById('advice2').innerHTML = advice2Arr.join('\n\n') || '構造化は良好です。';
+      document.getElementById('advice3').innerHTML = advice3Arr.join('\n\n') || '客観的な文体で記述されています。';
+
+      const badge = document.getElementById('scoreBadge');
+      const review = document.getElementById('reviewText');
+
+      if (total >= 24) {
+        badge.innerText = '適性高（High）';
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#166534';
+        review.innerText = 'AI検索エンジンが抽出・引用しやすい文章の型を十分に満たしています。FAQ構造をさらに追加することで引用確率を高められます。';
+      } else if (total >= 16) {
+        badge.innerText = '要改善（Medium）';
+        badge.style.background = '#fef3c7';
+        badge.style.color = '#92400e';
+        review.innerText = '基本的な情報は含まれていますが、抽象表現や長文が混ざっており、AIが「事実データ」として抽出しづらい状態です。';
+      } else {
+        badge.innerText = '引用リスク大（Low）';
+        badge.style.background = '#fee2e2';
+        badge.style.color = '#991b1b';
+        review.innerText = 'アピールや主観表現が多く、具体的な数値・Q&A形式が不足しています。AI検索からスルーされる可能性が高い構成です。';
+      }
+
+      document.getElementById('result-area').style.display = 'block';
+      document.getElementById('result-area').scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
