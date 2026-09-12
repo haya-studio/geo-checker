@@ -38,7 +38,6 @@
       margin: 0 auto;
     }
 
-    /* Header */
     header {
       margin-bottom: 36px;
     }
@@ -71,9 +70,26 @@
       color: var(--text-muted);
     }
 
-    /* Form */
     .input-group {
-      margin-bottom: 12px;
+      margin-bottom: 8px;
+    }
+
+    .input-guide {
+      font-size: 12.5px;
+      color: #0f172a;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .input-guide span {
+      background: #e2e8f0;
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #475569;
     }
 
     textarea {
@@ -100,6 +116,7 @@
     textarea::placeholder {
       color: #94a3b8;
       font-size: 13px;
+      line-height: 1.6;
     }
 
     .meta-bar {
@@ -128,7 +145,6 @@
       opacity: 0.9;
     }
 
-    /* Result Section */
     #result-area {
       display: none;
       margin-top: 48px;
@@ -225,7 +241,6 @@
       margin: 2px 4px 2px 0;
     }
 
-    /* Paid Report / Upsell Box */
     .lead-box {
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -267,7 +282,7 @@
       flex-direction: column;
       gap: 6px;
       text-align: left;
-      max-width: 320px;
+      max-width: 340px;
       margin-left: auto;
       margin-right: auto;
     }
@@ -281,7 +296,7 @@
     .btn-secondary {
       display: inline-block;
       width: 100%;
-      max-width: 320px;
+      max-width: 340px;
       padding: 12px 20px;
       background-color: var(--text-main);
       color: #ffffff;
@@ -336,7 +351,10 @@
     </header>
 
     <div class="input-group">
-      <textarea id="inputText" placeholder="WebサイトやLPの文章を貼り付けてください（例：会社概要、強み、サービス特徴、FAQなど）..."></textarea>
+      <div class="input-guide">
+        <span>使い方</span> 診断したいWebサイト・LPの「本文テキスト」を貼り付けてください
+      </div>
+      <textarea id="inputText" placeholder="※URLではなく、Webサイト内の文章（トップページの紹介文、サービスの特徴、FAQなど）をそのままコピー＆ペーストしてください（推奨：100〜800文字程度）"></textarea>
     </div>
     <div class="meta-bar">
       <span id="charCount">0 文字</span>
@@ -369,12 +387,12 @@
 
       <div class="lead-box">
         <span class="price-tag">買い切り 1,480円</span>
-        <h4>自社専用の『AI検索向けリライト改善レポート』</h4>
-        <p>診断結果をもとに、AI検索に好まれる具体的なリライト原稿、Q&A案、見出し改善案をまとめたPDFレポートを作成します。</p>
+        <h4>入力文章の『AI検索向けリライト改善レポート』</h4>
+        <p>診断したWebサイトの文章をもとに、AI検索に好まれる具体的なリライト原稿、Q&A構成、見出し改善案をまとめたPDFレポートを作成します。</p>
         <ul>
-          <li>入力テキストの具体的な清書・リライト原稿</li>
-          <li>AI検索のクエリに対応するFAQ形式の構成案</li>
-          <li>競合と差をつける数値・ファクトの配置アドバイス</li>
+          <li>診断した文章をベースにした具体的な清書・リライト原稿</li>
+          <li>AI検索のクエリに対応するQ&A（FAQ）の構成案</li>
+          <li>競合と差をつける数値・ファクトの最適な配置アドバイス</li>
         </ul>
         <a href="https://forms.gle/d2pcyDzTtxpUFtwy5" target="_blank" class="btn-secondary" id="buyLink">詳細レポートを申し込む（フォームへ）</a>
         <a href="https://forms.gle/d2pcyDzTtxpUFtwy5" target="_blank" class="upsell-link">対象ページの文章書き直し・代行のご相談はこちら</a>
@@ -395,88 +413,104 @@
 
     function runAnalysis() {
       const text = textarea.value.trim();
+      
       if (!text) {
         alert('Webサイトの文章を入力してください。');
         return;
       }
+      if (text.length < 30) {
+        alert('文章が短すぎます（現在 ' + text.length + ' 文字）。正確な診断のため、30文字以上の紹介文やコンテンツを入力してください。');
+        return;
+      }
 
-      // 1. 1次情報の具体性（数値・曖昧語）
-      let score1 = 10;
+      // 1. 1次情報の具体性
+      let score1 = 5;
       let advice1Arr = [];
+
+      const numbers = text.match(/[0-9０-９]+([%％万億円人社時間倍日年]+)?/g) || [];
+      if (numbers.length >= 2) {
+        score1 += 5;
+        advice1Arr.push(`【良好】「${numbers.slice(0, 3).join(', ')}」など複数の数値データが確認できました。`);
+      } else if (numbers.length === 1) {
+        score1 += 2;
+        advice1Arr.push(`【一部検出】数値「${numbers[0]}」が検出されましたが、より詳細な指標（社数・期間・比率など）を足すとさらに高評価になります。`);
+      } else {
+        score1 -= 2;
+        advice1Arr.push(`【数値不足】文章中に具体的な数値（％、社数、費用など）がありません。AIが事実として扱えるデータを追記してください。`);
+      }
+
       const vagueWords = ['業界トップクラス', '安心安全', '丁寧なサポート', '信頼と実績', '最高峰', '親身な', '圧倒的', '高品質', '充実した'];
       const detectedVague = vagueWords.filter(word => text.includes(word));
-
       if (detectedVague.length > 0) {
-        score1 -= Math.min(detectedVague.length * 2, 5);
+        score1 -= Math.min(detectedVague.length * 2, 4);
         const tags = detectedVague.map(w => `<span class="tag-detect">${w}</span>`).join(' ');
-        advice1Arr.push(`【検知された抽象表現】\n${tags}\nAIはこれらを「誇張広告」と判定し引用を避けます。具体的な数値や第三者実績に置き換えてください。`);
+        advice1Arr.push(`【抽象表現】\n${tags}\nAIはこれらを誇張広告と判定しやすいため、客観的な実績に言い換えてください。`);
       }
-
-      const numbers = text.match(/[0-9０-９]+([%％万億円人社時間倍日]+)?/g) || [];
-      if (numbers.length === 0) {
-        score1 -= 4;
-        advice1Arr.push(`【数値不足】文章中に具体的な数値（％、導入社数、対応時間など）がありません。AIが事実として扱えるデータを追記してください。`);
-      } else {
-        advice1Arr.push(`【良好】「${numbers.slice(0, 3).join(', ')}」などのデータが検出されました。`);
-      }
-      score1 = Math.max(1, score1);
+      score1 = Math.min(10, Math.max(1, score1));
 
       // 2. 構造化・FAQ適性
-      let score2 = 10;
+      let score2 = 4;
       let advice2Arr = [];
-      const hasQuestion = /[？\?]|Q[.:：]/g.test(text);
-      const hasList = /[・\-■●★1-9][.、]/g.test(text);
 
-      if (!hasQuestion) {
-        score2 -= 3;
-        advice2Arr.push(`【Q&A形式の不足】「〜の費用は？」「納期は？」といった疑問文がありません。検索クエリに直接答える見出しを設けてください。`);
+      const hasQuestion = /[？\?]|Q[.:：]/g.test(text);
+      if (hasQuestion) {
+        score2 += 3;
+        advice2Arr.push(`【良好】検索クエリに応える疑問文・Q&A形式が確認できました。`);
       } else {
-        advice2Arr.push(`【良好】検索意図に応える疑問文・Q&A形式が確認できました。`);
+        advice2Arr.push(`【改善点】疑問文（Q&A形式）がありません。「〜の費用は？」「納期は？」などの見出しを設けると引用確率が上がります。`);
       }
 
-      if (!hasList) {
-        score2 -= 2;
-        advice2Arr.push(`【箇条書き推奨】要点が箇条書き化されていません。AIはリスト構造のテキストを要約データとして優先引用します。`);
+      const hasList = /[・\-■●★1-9][.、]/g.test(text) || (text.match(/\n/g) || []).length >= 3;
+      if (hasList) {
+        score2 += 3;
+        advice2Arr.push(`【良好】箇条書きや適切な改行で情報が構造化されています。`);
+      } else {
+        score2 -= 1;
+        advice2Arr.push(`【改善点】箇条書き化が不足しています。AIはリスト構造のテキストを要約データとして優先引用します。`);
       }
 
       const sentences = text.split(/[。\n]/).filter(s => s.trim().length > 0);
       if (sentences.some(s => s.length > 100)) {
         score2 -= 2;
-        advice2Arr.push(`【長文の検知】1文が100文字を超える文章があります。短文に区切ることでAIの解析精度が上がります。`);
+        advice2Arr.push(`【長文注意】1文が100文字を超える長い文があります。短文に区切ることでAIの抽出精度が向上します。`);
       }
-      score2 = Math.max(1, score2);
+      score2 = Math.min(10, Math.max(1, score2));
 
       // 3. 客観性・事実記述（E-E-A-T）
-      let score3 = 10;
+      let score3 = 5;
       let advice3Arr = [];
-      const subjectiveWords = ['目指します', '思います', '自信があります', '感じていただけます', '大好評'];
-      const detectedSubjective = subjectiveWords.filter(word => text.includes(word));
 
+      const objectiveMatches = text.match(/(である|提供している|対応する|導入された|実施した|開発した|公開した)/g) || [];
+      if (objectiveMatches.length >= 2) {
+        score3 += 4;
+        advice3Arr.push(`【良好】客観的な事実ベースの文末構造（〜である、〜提供している）が確認できました。`);
+      } else if (objectiveMatches.length === 1) {
+        score3 += 2;
+        advice3Arr.push(`【一部確認】事実ベースの表現が見られますが、全体を通して断定的な事実記述を増やしてください。`);
+      } else {
+        score3 -= 1;
+        advice3Arr.push(`【改善点】客観的事実を示す文末（〜である、〜を提供する）が不足しています。`);
+      }
+
+      const subjectiveWords = ['目指します', '思います', '自信があります', '感じていただけます', '大好評', '喜ばれています'];
+      const detectedSubjective = subjectiveWords.filter(word => text.includes(word));
       if (detectedSubjective.length > 0) {
         score3 -= Math.min(detectedSubjective.length * 2, 4);
         const tags = detectedSubjective.map(w => `<span class="tag-detect">${w}</span>`).join(' ');
-        advice3Arr.push(`【主観表現を検知】\n${tags}\n感情的な表現を避け、「〜機能を提供する」「〜年に開始」など客観的事実の記述に統一してください。`);
+        advice3Arr.push(`【主観表現】\n${tags}\n感情表現や意気込みを控え、事実ベースの仕様・実績記述に統一してください。`);
       }
+      score3 = Math.min(10, Math.max(1, score3));
 
-      const objectiveMatches = text.match(/(である|提供している|対応する|導入された|実施した)/g) || [];
-      if (objectiveMatches.length === 0) {
-        score3 -= 2;
-        advice3Arr.push(`【事実記述の推奨】「〜を提供している」「〜を採用」など、事実を示す断定文を増やしてください。`);
-      } else {
-        advice3Arr.push(`【良好】客観的な事実ベースの文末構造が確認できました。`);
-      }
-      score3 = Math.max(1, score3);
-
-      // 結果の反映
+      // 総合得点
       const total = score1 + score2 + score3;
       document.getElementById('totalScore').innerText = total;
       document.getElementById('score1').innerText = `${score1} / 10点`;
       document.getElementById('score2').innerText = `${score2} / 10点`;
       document.getElementById('score3').innerText = `${score3} / 10点`;
 
-      document.getElementById('advice1').innerHTML = advice1Arr.join('\n\n') || '特段の減点項目はありませんでした。';
-      document.getElementById('advice2').innerHTML = advice2Arr.join('\n\n') || '構造化は良好です。';
-      document.getElementById('advice3').innerHTML = advice3Arr.join('\n\n') || '客観的な文体で記述されています。';
+      document.getElementById('advice1').innerHTML = advice1Arr.join('\n\n');
+      document.getElementById('advice2').innerHTML = advice2Arr.join('\n\n');
+      document.getElementById('advice3').innerHTML = advice3Arr.join('\n\n');
 
       const badge = document.getElementById('scoreBadge');
       const review = document.getElementById('reviewText');
@@ -486,7 +520,7 @@
         badge.style.background = '#dcfce7';
         badge.style.color = '#166534';
         review.innerText = 'AI検索エンジンが抽出・引用しやすい文章の型を十分に満たしています。FAQ構造をさらに追加することで引用確率を高められます。';
-      } else if (total >= 16) {
+      } else if (total >= 15) {
         badge.innerText = '要改善（Medium）';
         badge.style.background = '#fef3c7';
         badge.style.color = '#92400e';
