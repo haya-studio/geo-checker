@@ -1,8 +1,8 @@
 // ==========================================
 // 共通設定（別ツールに流用する際はここを変更）
 // ==========================================
-// リクエスト用GoogleフォームURL（未設定の場合は空文字 "" または "REQUEST_FORM_URL_HERE" のままにします）
-const REQUEST_FORM_URL = "REQUEST_FORM_URL_HERE";
+// リクエスト用GoogleフォームURL
+const REQUEST_FORM_URL = "https://forms.gle/fnvTghAcARPegRuv6";
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- リクエストボタン制御 ---
@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let score3 = 0;
             let feedbacks = [];
 
+            // 1. 1次情報の具体性（数値の有無・文章量）
             const numberMatch = text.match(/[0-9０-９]/g);
             if (numberMatch && numberMatch.length >= 3) {
                 score1 += 6;
@@ -69,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (text.length > 100) score1 += 2;
             else feedbacks.push('文章量が少なめです。事業の詳細や特徴をもう少し詳しく記述することをお勧めします。');
 
+            // 2. 構造化・Q&A適性（疑問符・改行）
             if (text.includes('？') || text.includes('?')) {
                 score2 += 5;
             } else {
@@ -82,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 feedbacks.push('文章が1つの塊になっています。改行や見出し（■、【】など）を使って構造化すると読み取りやすくなります。');
             }
 
+            // 3. 客観性・事実記述（語尾・抽象表現）
             const objectiveEndings = text.match(/です|ます|である|対応しています|提供しています/g);
             if (objectiveEndings && objectiveEndings.length >= 2) {
                 score3 += 6;
