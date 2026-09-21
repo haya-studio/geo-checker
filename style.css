@@ -160,6 +160,17 @@ textarea:focus {
     background-color: var(--accent-hover);
 }
 
+.btn-secondary {
+    background-color: #7f8c8d;
+    color: white;
+    display: block;
+    width: 100%;
+}
+
+.btn-secondary:hover {
+    background-color: #636e72;
+}
+
 .hidden {
     display: none !important;
 }
